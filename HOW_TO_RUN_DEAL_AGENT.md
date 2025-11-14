@@ -1,273 +1,311 @@
-# How to Run Deal Agent
+# How to Run Deal Agent System
 
-The Deal Agent system consists of multiple components that need to be running in the correct order. Follow these steps to chat directly with DealAgent via API.
+Simple step-by-step guide to run all 5 services needed for the Deal Agent system.
+
+---
 
 ## Prerequisites
 
-1. **Python 3.10+** installed
-2. **Node.js** installed (for the Deal Server)
-3. **Google API Key** (Gemini) - set as environment variable `GOOGLE_API_KEY`
+Before starting, make sure you have:
+- **Python 3.10+** installed
+- **Node.js** installed
+- **Google API Key** (Gemini) - you'll need this for terminals 2, 4, and 5
 
-## System Architecture
+---
 
-```
-DealAgent API :8001
-    ↓
-    ├─→ Sales Agent API :8000 → Toolbox MCP :5000
-    └─→ Deal Server (Node.js) :3000
-```
+## Quick Start: Run All 5 Terminals
 
-## Step-by-Step Setup
+Open **5 separate PowerShell terminals** and run the commands below in order.
 
-### Step 1: Start Toolbox MCP Server (Port 5000)
+---
 
-This is required for the Sales Agent to access the database.
+### **Terminal 1: Toolbox MCP Server** (Port 5000)
 
-**PowerShell:**
+**What it does:** Provides database access for Sales Agent
+
+**Commands:**
 ```powershell
-cd D:\ded\FinalDeal\sales_agent\database
+cd "D:\ded\FinalDeal - Copy git 1\sales_agent\database"
 $env:SQLITE_DATABASE = ".\customer.sqlite"
 .\toolbox.exe --prebuilt sqlite --port 5000
 ```
 
-**Keep this terminal running!** You should see output indicating the server is running on port 5000.
+**What you'll see:**
+```
+Starting Toolbox MCP server on port 5000...
+Server running...
+```
 
-### Step 2: Start Sales Agent API (Port 8000)
+**✅ Keep this terminal open!**
 
-Open a **NEW PowerShell terminal**:
+---
 
+### **Terminal 2: Sales Agent** (Port 8000)
+
+**What it does:** Looks up customer information
+
+**Commands:**
 ```powershell
-cd D:\ded\FinalDeal\sales_agent
+cd "D:\ded\FinalDeal - Copy git 1\sales_agent"
 $env:GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"
 python fastapi_server.py
 ```
 
-Or if you prefer to set the environment variable permanently:
-```powershell
-$env:GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"
-python D:\ded\FinalDeal\sales_agent\fastapi_server.py
+**Replace `YOUR_GEMINI_API_KEY` with your actual Google API key.**
+
+**What you'll see:**
+```
+INFO:     Uvicorn running on http://0.0.0.0:8000
 ```
 
-**Keep this terminal running!** The API should be available at `http://localhost:8000`
+**✅ Keep this terminal open!**
 
-### Step 3: Start Deal Server (Node.js) (Port 3000)
+---
 
-Open a **NEW PowerShell terminal**:
+### **Terminal 3: Deal Server** (Port 3000)
 
+**What it does:** Serves deal data from JSON files
+
+**Commands:**
 ```powershell
-cd D:\ded\FinalDeal\DealAgent
-npm install  # Only needed first time
+cd "D:\ded\FinalDeal - Copy git 1\DealAgent"
+npm install
 node server.js
 ```
 
-**Keep this terminal running!** The server should show: `Mock API running on port 3000`
+**Note:** `npm install` is only needed the first time.
 
-### Step 4: Start DealAgent API (Port 8001)
+**What you'll see:**
+```
+Mock API running on port 3000
+```
 
-Open a **NEW PowerShell terminal**:
+**✅ Keep this terminal open!**
 
+---
+
+### **Terminal 4: DealAgent API** (Port 8001)
+
+**What it does:** Main API that combines Sales Agent and Deal Server
+
+**Commands:**
 ```powershell
-cd D:\ded\FinalDeal
+cd "D:\ded\FinalDeal - Copy git 1"
 $env:GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"
-python DealAgent\api.py
+python DealAgent\fastapi_server.py
 ```
 
-**Keep this terminal running!** The API should be available at `http://localhost:8001`
+**Replace `YOUR_GEMINI_API_KEY` with your actual Google API key.**
 
-Now you can chat with DealAgent directly via the API (see "How to Chat with DealAgent" section below).
-
-## Quick Start (All Commands)
-
-If you want to run everything at once, here are all the commands in separate terminals:
-
-**Terminal 1 - Toolbox:**
-```powershell
-cd D:\ded\FinalDeal\sales_agent\database
-$env:SQLITE_DATABASE = ".\customer.sqlite"
-.\toolbox.exe --prebuilt sqlite --port 5000
+**What you'll see:**
+```
+INFO:     Uvicorn running on http://0.0.0.0:8001
+DealAgent FastAPI is running
 ```
 
-**Terminal 2 - Sales Agent:**
+**✅ Keep this terminal open!**
+
+---
+
+### **Terminal 5: Orchestrator Agent** (Interactive)
+
+**What it does:** Interactive agent where you type your questions
+
+**Commands:**
 ```powershell
-cd D:\ded\FinalDeal\sales_agent
+cd "D:\ded\FinalDeal - Copy git 1"
 $env:GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"
-python fastapi_server.py
+adk run OrchAgent
 ```
 
-**Terminal 3 - Deal Server:**
+**Replace `YOUR_GEMINI_API_KEY` with your actual Google API key.**
+
+**What you'll see:**
+```
+Starting OrchAgent...
+Agent ready. Type your queries below.
+[user]: 
+```
+
+**✅ This is where you type your questions!**
+
+---
+
+## How to Run JSON Agent
+
+The JSON Agent is used for modifying JSON data. It runs separately from the main Deal Agent system.
+
+### **JSON Agent** (Port 8002)
+
+**What it does:** Modifies JSON data based on natural language prompts
+
+**Commands:**
 ```powershell
-cd D:\ded\FinalDeal\DealAgent
-node server.js
+cd "D:\ded\FinalDeal - Copy git 1\JSON_AGENT-main"
+python web/app.py
 ```
 
-**Terminal 4 - DealAgent API:**
-```powershell
-cd D:\ded\FinalDeal
-$env:GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"
-python DealAgent\api.py
+**What you'll see:**
+```
+Starting JSON Agent FastAPI server on http://0.0.0.0:8002
+Web UI: http://localhost:8002/
+API Docs: http://localhost:8002/docs
 ```
 
-Now you're ready to chat with DealAgent! See the "How to Chat with DealAgent" section below.
+**Access the JSON Agent:**
+- **Web UI:** http://localhost:8002/
+- **API Docs:** http://localhost:8002/docs
 
-## Environment Variables
+**✅ Keep this terminal open if you need JSON modification features!**
 
-You can set these permanently for your user:
+---
 
-**PowerShell (permanent):**
-```powershell
-setx GOOGLE_API_KEY "YOUR_GEMINI_API_KEY"
-setx MCP_PORT "5001"
-setx SQLITE_DATABASE ".\customer.sqlite"
+## Testing
+
+Once all 5 terminals are running, go to **Terminal 5** and type:
+
+```
+Find CompanyABC's deal
 ```
 
-**Note:** After using `setx`, you need to open a new PowerShell window for the changes to take effect.
+**Expected response:**
+```
+[user]: Find CompanyABC's deal
+[Deal_agent]: ```json
+{"status": "success", "customer_id": 1, "company_name": "CompanyABC", "deal": {"bidStart": {"bidAcct": [{"abrEnab": null, "abrEnabUpd": null, "acet": "00008905R1", "ccElig": null, "ccEligUpd": null, "cwtTierClsUpd": null, "cwtTiercls": null, "payTerm": "30", "payTermCode": "03", "payTermCodeUpd": null, "payTermUpd": null}, {"abrEnab": "Y", "abrEnabUpd": null, "acet": "0000G8R287", "ccElig": "yes", "ccEligUpd": null, "cwtTierClsUpd": null, "cwtTiercls": null, "payTerm": "20", "payTermCode": "03", "payTermCodeUpd": null, "payTermUpd": null}], "bidHead": {"bidName": "By Crea AB", "bidNum": "D001149727", "billToCny": "SE", "cny": "SE", "creBxId": "XLQOBBL", "creDte": "2025-09-17", "dealRsn": "Conversion", "dealStatus": "P", "dist": "12", "endDte": "2099-01-03", "estAnnGrs": 2904828, "lastModDte": "2025-09-26", "origBid": "0001133442", "owner": "Marcus Persson", "rateTypCd": "01-1", "reg": "16", "sttDte": "2025-09-27", "templateMaster": "D001003339", "templateName": "SE Ronja V.3 [Non-Static]", "ver": null}}}}
+```
+[user]: 
+```
 
-## Verification
+---
 
-1. **Check Toolbox:** Should be running on port 5000
-2. **Check Sales Agent:** Visit `http://localhost:8000/` - should show API info
-3. **Check Deal Server:** Visit `http://localhost:3000/api/getdeal/customer/1` - should return JSON
-4. **Check DealAgent API:** Visit `http://localhost:8001/` - should show API info
+## Verification Checklist
+
+Before testing, make sure all terminals show:
+
+- [ ] **Terminal 1:** "Server running on port 5000"
+- [ ] **Terminal 2:** "Uvicorn running on http://0.0.0.0:8000"
+- [ ] **Terminal 3:** "Mock API running on port 3000"
+- [ ] **Terminal 4:** "Uvicorn running on http://0.0.0.0:8001"
+- [ ] **Terminal 5:** "[user]:" prompt
+
+You can also check in your browser:
+- Sales Agent: http://localhost:8000/
+- Deal Server: http://localhost:3000/api/getdeal/customer/1
+- DealAgent: http://localhost:8001/
+- JSON Agent: http://localhost:8002/
+
+---
 
 ## Troubleshooting
 
 ### Port Already in Use
-If a port is already in use:
+
+If you see "port already in use":
+
 ```powershell
-# Find what's using the port
+# Find what's using the port (replace 8000 with your port number)
 netstat -aon | findstr :8000
 
-# Kill the process (replace PID with the number from above)
+# Kill the process (replace <PID> with the number from above)
 taskkill /PID <PID> /F
 ```
 
 ### Toolbox Not Found
+
 If `toolbox.exe` is missing:
+
 ```powershell
-cd D:\ded\FinalDeal\sales_agent\database
+cd "D:\ded\FinalDeal - Copy git 1\sales_agent\database"
 Invoke-WebRequest -Uri "https://storage.googleapis.com/genai-toolbox/v0.18.0/windows/amd64/toolbox.exe" -OutFile "toolbox.exe"
 ```
 
 ### Missing Dependencies
-```powershell
-# Install Python dependencies (if needed)
-pip install fastapi uvicorn httpx google-adk
 
-# Install Node.js dependencies
-cd D:\ded\FinalDeal\DealAgent
+```powershell
+# Install Python packages
+pip install fastapi uvicorn httpx google-adk toolbox-llamaindex
+
+# Install Node.js packages
+cd "D:\ded\FinalDeal - Copy git 1\DealAgent"
 npm install
 ```
 
-## How to Chat with DealAgent
+### ADK Command Not Found
 
-Once all services are running, you can interact with DealAgent via HTTP API calls. Here are several methods:
-
-### Method 1: Using PowerShell (Invoke-RestMethod)
+If `adk` command doesn't work:
 
 ```powershell
-# Send a query to DealAgent
-$body = @{
-    query = "Find CompanyABC's deal"
-} | ConvertTo-Json
-
-$response = Invoke-RestMethod -Uri "http://localhost:8001/query" -Method POST -Body $body -ContentType "application/json"
-$response.response
+pip install google-adk
+python -m google.adk.cli run OrchAgent
 ```
 
-### Method 2: Using curl (if available)
+---
 
+## System Overview
+
+```
+Orchestrator Agent (Terminal 5)
+    ↓
+DealAgent API (Terminal 4) → Port 8001
+    ├─→ Sales Agent (Terminal 2) → Port 8000 → Toolbox (Terminal 1) → Port 5000
+    └─→ Deal Server (Terminal 3) → Port 3000
+```
+
+**Flow:**
+1. You type a question in Terminal 5 (Orchestrator)
+2. Orchestrator sends it to DealAgent API (Terminal 4)
+3. DealAgent queries Sales Agent (Terminal 2) to find customer ID
+4. Sales Agent uses Toolbox (Terminal 1) to access database
+5. DealAgent gets deal data from Deal Server (Terminal 3)
+6. DealAgent returns complete JSON response
+
+---
+
+## All Commands Reference
+
+Copy-paste ready commands for all 5 terminals:
+
+**Terminal 1:**
 ```powershell
-curl -X POST http://localhost:8001/query -H "Content-Type: application/json" -d "{\"query\": \"Find CompanyABC's deal\"}"
+cd "D:\ded\FinalDeal - Copy git 1\sales_agent\database"
+$env:SQLITE_DATABASE = ".\customer.sqlite"
+.\toolbox.exe --prebuilt sqlite --port 5000
 ```
 
-### Method 3: Using Python
-
-Create a simple Python script to chat with DealAgent:
-
-```python
-import httpx
-import json
-
-DEAL_AGENT_URL = "http://localhost:8001"
-
-def chat_with_deal_agent(query):
-    """Send a query to DealAgent and get response"""
-    response = httpx.post(
-        f"{DEAL_AGENT_URL}/query",
-        json={"query": query},
-        timeout=60.0
-    )
-    response.raise_for_status()
-    result = response.json()
-    return result["response"]
-
-# Example usage
-if __name__ == "__main__":
-    while True:
-        query = input("\nYou: ")
-        if query.lower() in ['exit', 'quit', 'q']:
-            break
-        try:
-            response = chat_with_deal_agent(query)
-            print(f"DealAgent: {response}")
-        except Exception as e:
-            print(f"Error: {e}")
-```
-
-Save this as `chat.py` and run:
+**Terminal 2:**
 ```powershell
-python chat.py
+cd "D:\ded\FinalDeal - Copy git 1\sales_agent"
+$env:GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"
+python fastapi_server.py
 ```
 
-### Method 4: Using Interactive Python
-
+**Terminal 3:**
 ```powershell
-python
+cd "D:\ded\FinalDeal - Copy git 1\DealAgent"
+node server.js
 ```
 
-Then in Python:
-```python
-import httpx
-
-def ask(query):
-    response = httpx.post("http://localhost:8001/query", json={"query": query})
-    return response.json()["response"]
-
-# Try it
-print(ask("Find CompanyABC's deal"))
+**Terminal 4:**
+```powershell
+cd "D:\ded\FinalDeal - Copy git 1"
+$env:GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"
+python DealAgent\fastapi_server.py
 ```
 
-### Method 5: Using HTTP Client (Postman, Insomnia, etc.)
-
-- **URL:** `http://localhost:8001/query`
-- **Method:** POST
-- **Headers:** `Content-Type: application/json`
-- **Body:**
-```json
-{
-  "query": "Find CompanyABC's deal"
-}
+**Terminal 5:**
+```powershell
+cd "D:\ded\FinalDeal - Copy git 1"
+$env:GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"
+adk run OrchAgent
 ```
 
-## Example Queries
+**JSON Agent (Optional - for JSON modification):**
+```powershell
+cd "D:\ded\FinalDeal - Copy git 1\JSON_AGENT-main"
+python web/app.py
+```
 
-Try these queries with DealAgent:
+---
 
-- `"Find CompanyABC's deal"`
-- `"Get deal information for customer ID 1"`
-- `"Show me deal details for TechCorp Solutions"`
-- `"What is the deal status for customer ID 2?"`
-- `"Get customer ID for CompanyABC"`
-- `"Show me the bid details for Global Logistics Inc"`
-
-## How DealAgent Works
-
-When you send a query, DealAgent will:
-1. **Query the Sales Agent** to find customer IDs by company name
-2. **Fetch deal data** from the Deal Server using the customer ID
-3. **Return comprehensive deal information** including bid details, accounts, payment terms, etc.
-
-## API Documentation
-
-Once DealAgent API is running, visit `http://localhost:8001/docs` for interactive API documentation where you can test queries directly in your browser.
-
+**That's it!** Follow the steps above and you'll have the system running.
